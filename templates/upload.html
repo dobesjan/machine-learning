@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Dataset</title>
+</head>
+<body>
+    <h1>Upload Dataset</h1>
+    <form action="{{ route('simplelinearregression.upload') }}" method="post" enctype="multipart/form-data">
+        {{ csrf_field }}
+        <input type="file" name="dataset" required>
+        <button type="submit">Upload</button>
+    </form>
+    {% if errors %}
+        <ul>
+        {% for error in errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select Columns</title>
+</head>
+<body>
+    <h1>Select Columns for Model Training</h1>
+    <form action="{{ route('simplelinearregression.train') }}" method="post">
+        {{ csrf_field }}
+        <input type="hidden" name="file_path" value="{{ file_path }}">
+        <label for="x_col">X (Independent Variable):</label>
+        <select name="x_col" required>
+            {% for column in columns %}
+                <option value="{{ column }}">{{ column }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="y_col">Y (Dependent Variable):</label>
+        <select name="y_col" required>
+            {% for column in columns %}
+                <option value="{{ column }}">{{ column }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="title">Plot Title:</label>
+        <input type="text" name="title" required>
+        <br>
+        <label for="x_label">X-axis Label:</label>
+        <input type="text" name="x_label" required>
+        <br>
+        <label for="y_label">Y-axis Label:</label>
+        <input type="text" name="y_label" required>
+        <br>
+        <button type="submit">Train Model</button>
+    </form>
+</body>
+</html>
