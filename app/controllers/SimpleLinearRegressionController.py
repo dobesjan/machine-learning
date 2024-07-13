@@ -1,4 +1,5 @@
 from masonite.request import Request
+from masonite.filesystem import Storage
 from masonite.views import View
 from masonite.controllers import Controller
 from masonite.validation import Validator
@@ -13,7 +14,7 @@ class SimpleLinearRegressionController(Controller):
     def show(self, view: View):
         return view.render("upload")
 
-    def upload(self, request: Request, view: View, validate: Validator):
+    def upload(self, request: Request, view: View, validate: Validator, storage: Storage):
         errors = request.validate(
             {
                 "dataset": "required|file",
@@ -23,9 +24,12 @@ class SimpleLinearRegressionController(Controller):
         if errors:
             return view.render("upload", {"errors": errors})
 
-        dataset = request.file("dataset")
+        dataset = request.input("dataset")
         file_path = os.path.join("storage", "uploads", dataset.filename)
-        dataset.store(file_path)
+        target_dir = os.path.join("storage", "uploads", dataset.filename)
+        #disk = os.path.join(storage.disk('local').path, "storage", "uploads")
+        print(dataset.filename)
+        storage.disk('local').put_file(target_dir, dataset, dataset.filename)
 
         df = pd.read_csv(file_path)
 
