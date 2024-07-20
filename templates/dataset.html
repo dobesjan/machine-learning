@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Select stored dataset</title>
+</head>
+<body>
+    <h1>Select stored dataset for Model Training</h1>
+    <form action="{{ route('simplelinearregression.train') }}" method="post">
+        {{ csrf_field }}
+        <select name="dataset" required>
+            {% for file in files %}
+                <option value="{{ file }}">{{ file }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Train Model</button>
+    </form>
+</body>
+</html>

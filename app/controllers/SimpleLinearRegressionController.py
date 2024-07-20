@@ -4,11 +4,20 @@ from masonite.views import View
 from masonite.controllers import Controller
 from masonite.validation import Validator
 import pandas as pd
+from io import StringIO
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import os
+
+def get_file_path(file_name: str):
+    return os.path.join("storage", "uploads", file_name)
+
+def load_dataset(file_path: str, storage: Storage):
+    file_content = storage.disk('local').get(file_path)
+    df = pd.read_csv(StringIO(file_content))
+    return df.columns.tolist()
 
 class SimpleLinearRegressionController(Controller):
     def show(self, view: View):
@@ -25,27 +34,41 @@ class SimpleLinearRegressionController(Controller):
             return view.render("upload", {"errors": errors})
 
         dataset = request.input("dataset")
-        file_path = os.path.join("storage", "uploads", dataset.filename)
-        target_dir = os.path.join("storage", "uploads", dataset.filename)
-        #disk = os.path.join(storage.disk('local').path, "storage", "uploads")
-        print(dataset.filename)
-        storage.disk('local').put_file(target_dir, dataset, dataset.filename)
+        file_path = get_file_path(dataset.filename)
+        target_dir = os.path.join("storage", "uploads")
+        file_name = os.path.splitext(dataset.filename)[0]
+        storage.disk('local').put_file(target_dir, dataset, file_name)
 
-        df = pd.read_csv(file_path)
-
-        columns = df.columns.tolist()
+        columns = load_dataset(file_path, storage)
 
         return view.render("columns", {"columns": columns, "file_path": file_path})
+    
+    def dataset(self, view: View):
+        storage_dir = os.path.join("storage", "uploads")
+        files = os.listdir(storage_dir)
+        
+        # Filter the list to include only files, excluding subdirectories
+        files = [f for f in files if os.path.isfile(os.path.join(storage_dir, f))]
+        return view.render("dataset", {"files": files})
 
-    def train(self, request: Request, view: View):
-        file_path = request.input("file_path")
+    def trainstored(self, request: Request, view: View, storage: Storage):
+        dataset = request.input("dataset")
+        file_path = get_file_path(dataset.filename)
+        columns = load_dataset(file_path, storage)
+        return view.render("columns", {"columns": columns, "file_path": file_path})
+
+    def train(self, request: Request, view: View, storage: Storage):
+        file_name = request.input("file_name")
+        file_path = os.path.join("storage", "uploads", file_name)
+        target_dir = os.path.join("storage", "uploads")
         x_col = request.input("x_col")
         y_col = request.input("y_col")
         title = request.input("title")
         x_label = request.input("x_label")
         y_label = request.input("y_label")
 
-        df = pd.read_csv(file_path)
+        file_content = storage.disk('local').get(file_path)
+        df = pd.read_csv(StringIO(file_content))
         X = df[[x_col]].values
         y = df[y_col].values
 
